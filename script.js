@@ -1,3 +1,5 @@
+
+
 function formatThaiDate(dateObj) {
   const months = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
                   "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
@@ -15,6 +17,7 @@ function getTodayKey() {
 function pad(num, len) {
   return num.toString().padStart(len, '0');
 }
+
 
 function drawNumbers() {
   return {
@@ -143,3 +146,4 @@ function buy(type) {
 }
 
 const isWin = Math.random() < 0.4;
+
