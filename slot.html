@@ -6,6 +6,85 @@
 <title>สล็อตโทนม่วง</title>
 <link rel="stylesheet" href="style.css">
 </head>
+<style>/* สล็อตและหน้าต่างควบคุม */
+.balance, .controls {
+    margin: 15px;
+    font-size: 24px;
+}
+
+input[type="number"] {
+    padding: 5px;
+    font-size: 18px;
+    width: 80px;
+    border-radius: 5px;
+    border: none;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 20px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 8px;
+    background-color: #6a0dad;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background-color: #8a2be2;
+}
+
+.slots {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 20px;
+}
+
+.slot {
+    width: 100px;
+    height: 100px;
+    background: #4b0082;
+    border: 4px solid #d3b3ff;
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 60px;
+    box-shadow: 0 0 15px #8a2be2;
+    transition: transform 0.8s ease-in-out;
+}
+
+.slot.spinning {
+    animation: spinEffect 0.8s ease-in-out;
+}
+
+@keyframes spinEffect {
+    0% { transform: rotateX(0deg); }
+    50% { transform: rotateX(360deg); }
+    100% { transform: rotateX(0deg); }
+}
+
+/* ข้อความแจ้งรางวัล */
+.win-message {
+    position: absolute;
+    top: 40%;
+    background: linear-gradient(90deg, #ff00ff, #800080);
+    padding: 20px 40px;
+    border-radius: 15px;
+    font-size: 36px;
+    color: #fff;
+    animation: popup 1.5s forwards;
+}
+
+@keyframes popup {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+</style></style>
 <body>
 
 <!-- Navbar -->
