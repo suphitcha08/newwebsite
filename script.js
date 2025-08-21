@@ -147,3 +147,24 @@ function buy(type) {
 
 const isWin = Math.random() < 0.4;
 
+
+/* Navbar responsive */
+const menuToggle = document.getElementById('menuToggle');
+const navLinks = document.getElementById('navLinks');
+menuToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+});
+
+const addBtn = document.getElementById('addBtn');
+const addInput = document.getElementById('addAmount');
+
+addBtn.addEventListener('click', () => {
+    let add = parseInt(addInput.value);
+    if (isNaN(add) || add <= 0) {
+        alert("ใส่จำนวนเงินที่ถูกต้อง!");
+        return;
+    }
+    balance += add;
+    balanceEl.textContent = balance;
+    addInput.value = ""; // ล้างช่องกรอก
+});
