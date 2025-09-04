@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สร้าง QR พร้อมเพย์จริง</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    color: #d3b3ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .navbar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    background-color: #6a0dad;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  }
+  .logo { font-size: 24px; font-weight: bold; }
+  .nav-links a {
+    color: #fff; text-decoration: none; margin-left: 20px; font-size: 18px;
+  }
+  .menu-toggle {
+    display: none; font-size: 28px; cursor: pointer;
+  }
+  @media (max-width: 768px) {
+    .nav-links { display: none; flex-direction: column; width: 100%; background-color: #6a0dad; position: absolute; top: 60px; left: 0; }
+    .nav-links a { margin: 15px 0; text-align: center; font-size: 20px; }
+    .menu-toggle { display: block; }
+    .nav-links.active { display: flex; }
+  }
+  .container {
+    margin-top: 40px;
+    text-align: center;
+  }
+  input {
+    padding: 10px; font-size: 18px; margin: 10px; border-radius: 5px; border: none;
+  }
+  button {
+    padding: 10px 20px; font-size: 20px; border: none; border-radius: 8px;
+    background-color: #6a0dad; color: #fff; cursor: pointer; transition: 0.2s; margin-top: 10px;
+  }
+  button:hover { background-color: #8a2be2; }
+  #qrcode {
+    margin-top: 30px; padding: 20px; background: #fff; border-radius: 15px;
+    box-shadow: 0 0 15px #8a2be2; display: inline-block;
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+<div class="logo">Slot game By เป็ด</div>
+    <div class="nav-links" id="navLinks">
+        <a href="index.html">สลากรายวัน</a>
+        <a href="slot.html">Slot game</a>
+        <a href="qrcode.html">Qrcode</a>
+        <a href="">ติดต่อ</a>
+    </div>
+  <div class="menu-toggle" id="menuToggle">&#9776;</div>
+</nav>
+
+<div class="container">
+  <h1>สร้าง QR พร้อมเพย์</h1>
+  <input type="text" id="ppId" placeholder="เบอร์มือถือ / เลขพร้อมเพย์"><br>
+  <input type="number" id="amount" placeholder="จำนวนเงิน (บาท)" min="1"><br>
+  <button id="generateBtn">แสดง QR Code</button>
+  <div id="qrcode"></div>
+</div>
+
+<!-- qrcode.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// Navbar responsive
+const menuToggle = document.getElementById('menuToggle');
+const navLinks = document.getElementById('navLinks');
+menuToggle.addEventListener('click', () => navLinks.classList.toggle('active') );
+
+// ฟังก์ชันคำนวณ CRC16 ตามมาตรฐาน EMVCo
+function crc16ccitt(payload) {
+  let crc = 0xFFFF;
+  for (let i = 0; i < payload.length; i++) {
+    crc ^= payload.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      if ((crc & 0x8000) > 0) crc = (crc << 1) ^ 0x1021;
+      else crc = crc << 1;
+      crc &= 0xFFFF;
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+
+// ฟังก์ชันสร้าง PromptPay Payload
+function generatePromptPayPayload(ppId, amount) {
+  // ถ้าเป็นเบอร์โทร ต้องแปลงเป็นรูปแบบ +66
+  let target = ppId;
+  if (/^\d{10}$/.test(ppId)) {
+    target = "0066" + ppId.substring(1);
+  }
+
+  let idType = target.length >= 13 ? "02" : "01"; // 01=Mobile, 02=National ID
+  let targetField = `0016A000000677010111${idType}${target.length.toString().padStart(2,"0")}${target}`;
+
+  let payload = 
+    "000201" + // Payload Format Indicator
+    "010212" + // Point of Initiation Method (12=dynamic)
+    "29" + targetField.length.toString().padStart(2,"0") + targetField +
+    "5303764" + // Currency = THB (764)
+    "54" + amount.toString().length.toString().padStart(2,"0") + amount +
+    "5802TH" + // Country = TH
+    "6304";    // CRC placeholder
+
+  // คำนวณ CRC
+  const crc = crc16ccitt(payload);
+  return payload + crc;
+}
+
+// เมื่อกดปุ่ม Generate
+document.getElementById('generateBtn').addEventListener('click', () => {
+  const ppId = document.getElementById('ppId').value.trim();
+  const amountStr = document.getElementById('amount').value.trim();
+
+  if (!ppId || !amountStr || parseFloat(amountStr) <= 0) {
+    alert("กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง");
+    return;
+  }
+
+  const amount = parseFloat(amountStr).toFixed(2);
+  const payload = generatePromptPayPayload(ppId, amount);
+
+  document.getElementById('qrcode').innerHTML = "";
+  new QRCode(document.getElementById("qrcode"), {
+    text: payload,
+    width: 250,
+    height: 250,
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+    correctLevel : QRCode.CorrectLevel.H
+  });
+});
+</script>
+
+</body>
+</html>
